@@ -1,0 +1,8 @@
+com\student\registration\model\Student.class
+com\student\registration\exception\StudentNotFoundException.class
+com\student\registration\repository\StudentRepositoryImpl.class
+com\student\registration\repository\StudentRepository.class
+com\student\registration\config\DataSourceConfig.class
+com\student\registration\model\Address.class
+com\student\registration\RegistrationServiceApplication.class
+com\student\registration\repository\StudentRepositoryInternal.class
