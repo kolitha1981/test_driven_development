@@ -1,7 +1,6 @@
 package com.student.registration.repository;
 
 import java.util.Calendar;
-import java.util.Optional;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -12,23 +11,21 @@ import org.springframework.boot.test.context.SpringBootTest;
 import com.student.registration.exception.StudentNotFoundException;
 import com.student.registration.model.Address;
 import com.student.registration.model.Student;
+import com.student.registration.service.StudentService;
 
 @SpringBootTest
-class StudentRepositoryTest {
+class StudentServiceImplTest extends BaseTest {
 	
 	@Autowired
-	private StudentRepository studentRepository;
-	
-	@Autowired
-	private StudentRepositoryInternal studentRepositoryInternal;
+	private StudentService studentService;
 	
 	@BeforeEach
 	void setUp() {
-		studentRepositoryInternal.deleteAll();
+		cleanUpData();
 	}
 	
 	@Test
-	void testRegsiterStudentWhenValidStudentObjectIsPassed() {
+	void testRegisterStudentWhenValidObjectIsPassed() {
 		final Student student =  new Student();
 		student.setStudentName("Jhon Doe");
 		student.setDateOfBirth(Calendar.getInstance().getTime());
@@ -38,9 +35,28 @@ class StudentRepositoryTest {
 		address.setState("Ohaio");
 		address.setStreet1("Main Street 1");
 		student.setAddress(address);
-		final Student savedStudent  = studentRepository.register(student);
-        Assertions.assertNotNull(savedStudent);
-        Assertions.assertNotNull(savedStudent.getStudentId());
+		Student registertedStudent = studentService.register(student);
+		Assertions.assertNotNull(registertedStudent);
+	}
+	
+	@Test
+	void testRegisterStudentWhenInvalidObjectIsPassed() {
+		final Student student =  new Student();
+		student.setStudentName(null);
+		student.setDateOfBirth(null);
+		final Address address =  new Address();
+		address.setCountry("United States");
+		address.setProvince("Us-east");
+		address.setState("Ohaio");
+		address.setStreet1("Main Street 1");
+		student.setAddress(address);
+		try
+		{
+			studentService.register(student);
+			Assertions.fail();
+		} catch(IllegalArgumentException e) {
+			Assertions.assertNotNull(e);
+		}		
 	}
 	
 	@Test
@@ -54,20 +70,19 @@ class StudentRepositoryTest {
 		address.setState("Ohaio");
 		address.setStreet1("Main Street 1");
 		student.setAddress(address);
-		final Student savedStudent  = studentRepository.register(student);
+		final Student savedStudent  = studentService.register(student);
 		Assertions.assertNotNull(savedStudent);
         Assertions.assertNotNull(savedStudent.getStudentId());
-		Student retrievedStudent = studentRepository.getStudentById(savedStudent.getStudentId());
+		Student retrievedStudent = studentService.getStudentById(savedStudent.getStudentId());
 		Assertions.assertNotNull(retrievedStudent);
-		Assertions.assertEquals(retrievedStudent.getStudentId(), savedStudent.getStudentId());
 	}
 	
 	@Test
 	void testRetrieveRegisteredStudentWhenInValidIdisPassed() {
 		try {
-			studentRepository.getStudentById(-1L);
+			studentService.getStudentById(-1L);
 			Assertions.fail();
-		} catch( StudentNotFoundException e) {
+		} catch(StudentNotFoundException e) {
 			Assertions.assertNotNull(e);
 		}
 	}
@@ -83,34 +98,13 @@ class StudentRepositoryTest {
 		address.setState("Ohaio");
 		address.setStreet1("Main Street 1");
 		student.setAddress(address);
-		final Student savedStudent  = studentRepository.register(student);
+		final Student savedStudent  = studentService.register(student);
 		savedStudent.setStudentName("Jhon Doe4");
-		final Student  mergedStudent =  studentRepository.merge(savedStudent);
+		final Student  mergedStudent =  studentService.merge(savedStudent);
 		Assertions.assertNotNull(mergedStudent);
-		Assertions.assertEquals(mergedStudent.getStudentName(), "Jhon Doe4");
-	}
-	
-	@Test
-	void testMergeStudentWhenInValidStudentIsPassed() {
-		final Student student =  new Student();
-		student.setStudentName("Jhon Doe3");
-		student.setDateOfBirth(Calendar.getInstance().getTime());
-		final Address address =  new Address();
-		address.setCountry("United States");
-		address.setProvince("Us-east");
-		address.setState("Ohaio");
-		address.setStreet1("Main Street 1");
-		student.setAddress(address);
-		final Student savedStudent  = studentRepository.register(student);
-		savedStudent.setStudentId(-1L);
-		savedStudent.setStudentName("Jhon Doe4");
-		try
-		{
-			studentRepository.merge(savedStudent);
-			Assertions.fail();
-		}catch(StudentNotFoundException e) {
-			Assertions.assertNotNull(e);
-		}
+		Student retrievedStudent = studentService.getStudentById(mergedStudent.getStudentId());
+		Assertions.assertNotNull(retrievedStudent);
+		Assertions.assertEquals(retrievedStudent.getStudentName(), "Jhon Doe4");
 	}
 	
 	@Test
@@ -124,18 +118,17 @@ class StudentRepositoryTest {
 		address.setState("Ohaio");
 		address.setStreet1("Main Street 1");
 		student.setAddress(address);
-		final Student savedStudent  = studentRepository.register(student);
+		final Student savedStudent  = studentService.register(student);
         Assertions.assertNotNull(savedStudent);
         Assertions.assertNotNull(savedStudent.getStudentId());
-        studentRepository.delete(savedStudent.getStudentId());
+        studentService.delete(savedStudent.getStudentId());
         try
         {
-        	studentRepository.getStudentById(savedStudent.getStudentId());
+        	studentService.getStudentById(savedStudent.getStudentId());
         	Assertions.fail();
         }catch(StudentNotFoundException e) {
         	Assertions.assertNotNull(e);
         }
-		
 	}
 
 }
