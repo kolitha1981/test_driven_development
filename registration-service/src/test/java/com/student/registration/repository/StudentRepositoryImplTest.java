@@ -5,9 +5,11 @@ import java.util.Calendar;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
+import com.student.registration.exception.RequestProcessingFailedException;
 import com.student.registration.exception.StudentNotFoundException;
 import com.student.registration.model.Address;
 import com.student.registration.model.Student;
@@ -37,6 +39,27 @@ class StudentRepositoryImplTest extends BaseTest {
 		final Student savedStudent  = studentRepository.register(student);
         Assertions.assertNotNull(savedStudent);
         Assertions.assertNotNull(savedStudent.getStudentId());
+	}
+	
+	@Test
+	void testRegsiterStudentWhenExceptionIsThrown() {
+		StudentRepositoryInternal studentRepositoryInternal =  Mockito.mock(StudentRepositoryInternal.class);		
+		final Student student =  new Student();
+		student.setStudentName("Jhon Doe");
+		student.setDateOfBirth(Calendar.getInstance().getTime());
+		final Address address =  new Address();
+		address.setCountry("United States");
+		address.setProvince("Us-east");
+		address.setState("Ohaio");
+		address.setStreet1("Main Street 1");
+		student.setAddress(address);
+		Mockito.doThrow(RuntimeException.class).when(studentRepositoryInternal).save(student);
+		final StudentRepository studentRepository =  new StudentRepositoryImpl(studentRepositoryInternal);
+		RequestProcessingFailedException requestProcessingFailedException = Assertions
+				.assertThrows(RequestProcessingFailedException.class, ()  -> {			
+			studentRepository.register(student);
+		});
+		Assertions.assertNotNull(requestProcessingFailedException);
 	}
 	
 	@Test

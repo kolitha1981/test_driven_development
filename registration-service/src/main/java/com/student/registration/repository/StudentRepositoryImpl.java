@@ -5,18 +5,29 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
+import com.student.registration.exception.RequestProcessingFailedException;
 import com.student.registration.exception.StudentNotFoundException;
 import com.student.registration.model.Student;
 
 @Repository
 public class StudentRepositoryImpl implements StudentRepository {
 
-	@Autowired
 	private StudentRepositoryInternal studentRepositoryInternal;
+	
+	@Autowired
+	public StudentRepositoryImpl(StudentRepositoryInternal studentRepositoryInternal) {
+		this.studentRepositoryInternal =  studentRepositoryInternal;
+	}
 
 	@Override
 	public Student register(Student student) {
-		return studentRepositoryInternal.save(student);
+		Student savedStudent = null;
+		try {
+			savedStudent = studentRepositoryInternal.save(student);
+		} catch (Exception e) {
+			throw new RequestProcessingFailedException("Exception occurred when processing request", e);
+		}
+		return savedStudent;
 	}
 
 	@Override
