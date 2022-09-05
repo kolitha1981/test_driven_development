@@ -35,6 +35,7 @@ public class StudentServiceImpl implements StudentService {
 	}
 
 	@Override
+	@Transactional
 	public void delete(Long studentId) {
 		studentRepositiry.delete(studentId);
 	}
